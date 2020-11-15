@@ -15,8 +15,12 @@ declare s=(uint8:{1..20})
 
 # SHA_CTX is a typedef, not a struct, so you should use -a
 if ! sizeof -am ctx SHA_CTX; then
-    echo FIXME: failed to create SHA_CTX structure
-    exit 1
+    echo 'WARNING: failed to create SHA_CTX structure (missing debug symbols?) - falling back to manual definition'
+    # see SHAstate_st in <sha.h> for structure definition
+    if ! dlcall -r pointer -n ctx malloc $(($(sizeof unsigned) * (5 + 2 + 16 + 1))); then
+        echo ERROR: unable to malloc SHA_CTX
+        exit 1
+    fi
 fi
 
 dlcall -n md -r pointer malloc 20
